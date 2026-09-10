@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.PaddingValues
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import no.nova.training.data.exercises.ExerciseCatalog

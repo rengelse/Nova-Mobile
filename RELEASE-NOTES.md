@@ -14,3 +14,7 @@ Første Android-baseline.
 - bundlet desktopens komplette øvelseskatalog og offline artwork
 - lagt inn LAN URL-validering, payload-limit og NTP1-validering
 - klargjort struktur for senere workout logging/retur uten å implementere dette i v0.1.0
+
+### Build fix 2
+- Rettet feil Compose-import av `PaddingValues` i fem UI-skjermer.
+- `PaddingValues` importeres nå fra `androidx.compose.foundation.layout`, som er korrekt Compose-pakke.
