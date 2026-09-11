@@ -13,7 +13,7 @@ data class ExerciseCatalogEntry(
     val tips: List<String> = emptyList(),
     val mistakes: List<String> = emptyList(),
     val artworkId: String,
-    val attribution: String? = null
+    val attribution: ExerciseAttribution? = null
 ) {
     fun techniqueLines(): List<String> = buildList {
         if (start.isNotBlank()) add(start)
@@ -21,6 +21,17 @@ data class ExerciseCatalogEntry(
         addAll(tips.filter { it.isNotBlank() })
     }
 }
+
+data class ExerciseAttribution(
+    val creator: String = "",
+    val license: String = "",
+    val source: ExerciseAttributionSource? = null
+)
+
+data class ExerciseAttributionSource(
+    val name: String = ""
+)
+
 
 data class StoredProgram(
     val exportId: String,
