@@ -8,6 +8,7 @@ import no.nova.training.data.model.Ntp1Payload
 import no.nova.training.data.model.StoredProgram
 import no.nova.training.data.transfer.Ntp1Validator
 import no.nova.training.data.transfer.TrainingTransferClient
+import no.nova.training.data.transfer.BarcodeTransferClient
 
 class NovaRepository(context: Context) {
     val gson = Gson()
@@ -15,6 +16,7 @@ class NovaRepository(context: Context) {
     private val database = ProgramDatabase(context)
     private val validator = Ntp1Validator(catalog)
     private val transferClient = TrainingTransferClient(gson)
+    private val barcodeClient = BarcodeTransferClient(gson)
 
     fun activeProgram(): StoredProgram? = database.activeProgramJson()?.let(::decodeStored)
     fun allPrograms(): List<StoredProgram> = database.allProgramsJson().mapNotNull { runCatching { decodeStored(it) }.getOrNull() }
@@ -32,6 +34,11 @@ class NovaRepository(context: Context) {
     }
 
     fun confirm(url: String, exportId: String) = transferClient.confirm(url, exportId)
+
+    fun isBarcodePairingUrl(raw: String): Boolean = barcodeClient.isBarcodePairingUrl(raw)
+    fun validateBarcodeUrl(raw: String): String = barcodeClient.validateBarcodeUrl(raw)
+    fun pairBarcode(url: String) = barcodeClient.pair(url)
+    fun sendBarcode(url: String, ean: String) = barcodeClient.sendBarcode(url, ean)
 
     private fun decodeStored(json: String): StoredProgram {
         val payload = gson.fromJson(json, Ntp1Payload::class.java)

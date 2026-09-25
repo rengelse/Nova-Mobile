@@ -1,5 +1,15 @@
 # NOVA Mobile – Release Notes
 
+## v0.2.0 – Actual Intake Barcode Bridge
+
+- Overfør-skjermen gjenkjenner nå NOVA_BARCODE_1 pairing-QR fra desktop.
+- Etter pairing bytter kameraet til EAN-8 / UPC-A / UPC-E / EAN-13 produktskanning.
+- Skannet EAN sendes over samme private LAN-session til NOVA Desktop.
+- Kassalapp API-nøkkel og produkt-/næringsoppslag forblir på desktop.
+- Brukeren kan skanne flere produkter i samme session.
+- Egen URL-validering hindrer pairing mot offentlige/ukjente adresser.
+- Ny test for barcode-session URL-regler.
+
 ## v0.1.0 – NTP1 Offline Program Foundation
 
 Første Android-baseline.

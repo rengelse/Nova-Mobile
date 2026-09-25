@@ -1,6 +1,6 @@
-# NOVA Mobile v0.1.0
+# NOVA Mobile v0.2.0
 
-Første Android-baseline for NOVA trening.
+Android companion for NOVA trening og strekkodeskanning av faktisk matinntak.
 
 ## Omfang
 
@@ -14,6 +14,8 @@ Første Android-baseline for NOVA trening.
 - 304 øvelser / 302 artwork-sett / 906 SVG-framefiler bundlet lokalt
 - flere lagrede programmer kan beholdes og aktiveres
 - ingen backend, login eller cloud
+- NOVA_BARCODE_1 pairing mot desktop for EAN-8 / UPC / EAN-13
+- produktstrekkoden sendes kun til desktop; Kassalapp-tokenet ligger aldri på mobilen
 
 ## NTP1 authority
 
@@ -38,3 +40,7 @@ PC og telefon må være på samme Wi-Fi/LAN. QR-adressen må være en privat IPv
 `http://<LAN-IP>:<port>/nova/training/send/<token>`
 
 Mobilen gjør GET → validering → lokal SQLite-commit → POST confirm.
+
+## NOVA_BARCODE_1
+
+Når desktop viser QR for faktisk matinntak, skanner mobilen pairing-QR-en i samme Overfør-skjerm. Appen oppdager `/nova/intake/barcode/<token>`, verifiserer lokal LAN-session og går automatisk over til produktskanning. Produktets EAN sendes til desktop som JSON; desktop gjør Kassalapp-/Matvaretabellen-oppslaget.
