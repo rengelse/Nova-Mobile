@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreHoriz
+import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.outlined.FitnessCenter
 import androidx.compose.material3.*
@@ -23,6 +24,7 @@ data class BottomItem(val key: String, val label: String, val icon: ImageVector)
 
 val BottomItems = listOf(
     BottomItem("program", "Program", Icons.Outlined.FitnessCenter),
+    BottomItem("food", "Mat", Icons.Default.Restaurant),
     BottomItem("transfer", "Overfør", Icons.Default.QrCodeScanner),
     BottomItem("more", "Mer", Icons.Default.MoreHoriz)
 )

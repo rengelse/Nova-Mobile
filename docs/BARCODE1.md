@@ -1,13 +1,5 @@
-# NOVA_BARCODE_1
+# NOVA_BARCODE_1 – deprecated
 
-Desktop creates a short-lived LAN session:
+The v0.2.0 live desktop barcode bridge is replaced by **NOVA_INTAKE_1** in v0.3.0.
 
-`http://<private-ip>:<port>/nova/intake/barcode/<token>`
-
-Mobile scans this pairing QR, verifies the endpoint with GET, then scans an EAN-8 / UPC-A / UPC-E / EAN-13 product barcode and sends:
-
-```json
-{"type":"barcode","ean":"7038010054971"}
-```
-
-The desktop resolves the EAN through Kassalapp. The API token never leaves the desktop. Missing nutrition fields may be completed from a high-confidence Matvaretabellen match; uncertain matches require user confirmation on desktop.
+Products are now scanned directly in the mobile **Mat** screen and stored offline as EAN + scanId + timestamp. Desktop QR is used only when transferring the accumulated batch.

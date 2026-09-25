@@ -35,7 +35,6 @@ import kotlinx.coroutines.withContext
 import no.nova.training.data.NovaRepository
 import no.nova.training.data.transfer.TransferState
 import no.nova.training.scanner.QrCodeAnalyzer
-import no.nova.training.scanner.ProductBarcodeAnalyzer
 import no.nova.training.ui.components.NovaCard
 import no.nova.training.ui.components.NovaHeader
 import no.nova.training.ui.theme.*
@@ -46,23 +45,12 @@ import java.util.concurrent.Executors
     val scope = rememberCoroutineScope()
     var scanning by remember { mutableStateOf(false) }
     var state by remember { mutableStateOf<TransferState>(TransferState.Idle) }
-    var barcodeUrl by remember { mutableStateOf<String?>(null) }
-    var barcodeStatus by remember { mutableStateOf<String?>(null) }
-    var barcodeScanning by remember { mutableStateOf(false) }
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> scanning = granted }
 
     fun receive(rawUrl: String) {
         scanning = false
         scope.launch {
             try {
-                if (repository.isBarcodePairingUrl(rawUrl)) {
-                    val url = repository.validateBarcodeUrl(rawUrl)
-                    withContext(Dispatchers.IO) { repository.pairBarcode(url) }
-                    barcodeUrl = url
-                    barcodeStatus = "Koblet til NOVA Desktop. Skann produktets strekkode."
-                    barcodeScanning = true
-                    return@launch
-                }
                 val url = repository.validateUrl(rawUrl)
                 state = TransferState.Fetching
                 val (payload, json) = withContext(Dispatchers.IO) { repository.fetch(url) }
@@ -84,18 +72,6 @@ import java.util.concurrent.Executors
         NovaHeader("Overfør program")
         if (scanning) {
             QrScannerView(Modifier.weight(1f), onQr = ::receive, onClose = { scanning = false })
-        } else if (barcodeScanning && barcodeUrl != null) {
-            ProductScannerView(Modifier.weight(1f), onBarcode = { ean ->
-                barcodeScanning = false
-                scope.launch {
-                    try {
-                        withContext(Dispatchers.IO) { repository.sendBarcode(barcodeUrl!!, ean) }
-                        barcodeStatus = "Strekkode $ean sendt til PC-en."
-                    } catch (e: Exception) {
-                        barcodeStatus = e.message ?: "Kunne ikke sende strekkoden."
-                    }
-                }
-            }, onClose = { barcodeScanning = false })
         } else {
             Column(Modifier.fillMaxSize().padding(horizontal = 20.dp)) {
                 NovaCard(onClick = {
@@ -107,17 +83,6 @@ import java.util.concurrent.Executors
                     }
                 }
                 Row(Modifier.padding(vertical = 14.dp, horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.Wifi, null, tint = NovaBlue); Spacer(Modifier.width(8.dp)); Text("Telefon og PC må være på samme Wi-Fi/LAN.", color = NovaMuted, fontSize = 12.sp) }
-                if (barcodeUrl != null) {
-                    NovaCard {
-                        Text("Mat / faktisk inntak", fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                        Spacer(Modifier.height(6.dp))
-                        Text(barcodeStatus ?: "Koblet til PC-en.", color = NovaMuted, fontSize = 12.sp)
-                        Spacer(Modifier.height(10.dp))
-                        Button(onClick = { barcodeScanning = true }, modifier = Modifier.fillMaxWidth()) { Text("Skann produktstrekkode") }
-                        TextButton(onClick = { barcodeUrl = null; barcodeStatus = null }) { Text("Avslutt matskanning") }
-                    }
-                    Spacer(Modifier.height(12.dp))
-                }
                 TransferProgress(state)
                 if (state is TransferState.Success) {
                     val s = state as TransferState.Success
@@ -176,26 +141,3 @@ import java.util.concurrent.Executors
     }
 }
 
-
-@Composable private fun ProductScannerView(modifier: Modifier, onBarcode: (String) -> Unit, onClose: () -> Unit) {
-    val context = LocalContext.current
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-    val executor = remember { Executors.newSingleThreadExecutor() }
-    DisposableEffect(Unit) { onDispose { executor.shutdown() } }
-    Box(modifier.background(Color.Black)) {
-        AndroidView(factory = { ctx ->
-            val previewView = PreviewView(ctx).apply { scaleType = PreviewView.ScaleType.FILL_CENTER }
-            val providerFuture = ProcessCameraProvider.getInstance(ctx)
-            providerFuture.addListener({
-                val provider = providerFuture.get()
-                val preview = Preview.Builder().build().also { it.surfaceProvider = previewView.surfaceProvider }
-                val analysis = ImageAnalysis.Builder().setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).build().also { it.setAnalyzer(executor, ProductBarcodeAnalyzer { value -> previewView.post { onBarcode(value) } }) }
-                runCatching { provider.unbindAll(); provider.bindToLifecycle(lifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, preview, analysis) }
-            }, ContextCompat.getMainExecutor(ctx))
-            previewView
-        }, modifier = Modifier.fillMaxSize())
-        Surface(color = Color(0xAA08111B), shape = RoundedCornerShape(18.dp), modifier = Modifier.align(Alignment.TopCenter).padding(20.dp)) { Text("Hold produktets EAN-strekkode innenfor kameraet", modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp)) }
-        IconButton(onClick = onClose, modifier = Modifier.align(Alignment.TopEnd).padding(14.dp)) { Icon(Icons.Default.Close, "Lukk", tint = Color.White) }
-        Box(Modifier.align(Alignment.Center).width(300.dp).height(150.dp).background(Color.Transparent, RoundedCornerShape(24.dp)))
-    }
-}
